@@ -126,11 +126,6 @@ wizard_spellbook = WizardSpellbook(
     dispel=Spell("Nullify Magic")
 )
 
-noob_wizard_spellbook = WizardSpellbook(
-    nuke=Spell("Force Strike"),
-    dispel=Spell("Nullify Magic")
-)
-
 
 CHARACTER_GOBBIN = Character("Gobbin", DruidClass, druid_spellbook)
 CHARACTER_ZAVVO = Character("Zavvo", RogueClass)
@@ -203,7 +198,7 @@ CHARACTER_TIRIA = Character(
         drum_name="Hand Drum"
     )
 )
-CHARACTER_KRYSO = Character("Kryso", WizardClass, noob_wizard_spellbook)
+CHARACTER_KRYSO = Character("Kryso", WizardClass, wizard_spellbook)
 CHARACTER_PORRIT = Character("Porrit", MagicianClass, magician_spellbook)
 CHARACTER_RASTLE = Character("Rastle", RogueClass)
 

@@ -16,6 +16,7 @@ class VideoModes:
     height: int
     windowed_width: int
     windowed_height: int
+    reduced_quality: bool
 
 
 @dataclass(frozen=True)
@@ -48,7 +49,8 @@ LOCAL = Server(
         width=1820,
         height=1440,
         windowed_width=1820,
-        windowed_height=1440
+        windowed_height=1440,
+        reduced_quality=False
     )
 )
 
@@ -58,10 +60,11 @@ AWS1 = Server(
     eq_path="\\\\10.0.14.190\\everquest_rof2",
     mq_path="\\\\10.0.14.190\\Release",
     video_modes=VideoModes(
-        width=910,
-        height=720,
-        windowed_width=910,
-        windowed_height=1440
+        width=800,
+        height=600,
+        windowed_width=800,
+        windowed_height=600,
+        reduced_quality=True
     )
 )
 
@@ -70,10 +73,11 @@ AWS2 = Server(
     eq_path="\\\\10.0.1.42\\everquest_rof2",
     mq_path="\\\\10.0.1.42\\Release",
     video_modes=VideoModes(
-        width=910,
-        height=720,
-        windowed_width=910,
-        windowed_height=720
+        width=800,
+        height=600,
+        windowed_width=800,
+        windowed_height=600,
+        reduced_quality=True
     )
 )
 
@@ -97,6 +101,29 @@ def compare_dicts(dict1: Dict[str, Dict[str, str]], dict2: Dict[str, Dict[str, s
                 return False
 
     return True
+
+
+def diff_ini_sections(section_name: str, section1: Dict[str, str], section2: Dict[str, str]) -> None:
+    all_keys = set(section1.keys()).union(set(section2.keys()))
+    for key in all_keys:
+        value1 = section1.get(key)
+        value2 = section2.get(key)
+        if value1 != value2:
+            print(f"[{section_name}] {key}: {value1} != {value2}")
+
+
+def diff_inis(dict1: Dict[str, Dict[str, str]], dict2: Dict[str, Dict[str, str]]) -> None:
+    for section_name in set(dict1.keys()).union(set(dict2.keys())):
+        if section_name not in dict1:
+            print(f"Missing {section_name} in dict 1")
+        elif section_name not in dict2:
+            print(f"Missing {section_name} in dict 1")
+        else:
+            diff_ini_sections(
+                section_name,
+                dict1[section_name],
+                dict2[section_name]
+            )
 
 
 def render_file_to_eq(
@@ -219,6 +246,25 @@ def create_client_config_for_character(character: Character, server: Server) -> 
     ini['VideoMode']['Height'] = str(server.video_modes.height)
     ini['VideoMode']['WindowedWidth'] = str(server.video_modes.windowed_width)
     ini['VideoMode']['WindowedHeight'] = str(server.video_modes.windowed_height)
+
+    if server.video_modes.reduced_quality:
+        ini['Defaults'].update({
+            'MultiPassLighting': '0',
+            'SpellParticleDensity': '0.000000',
+            'ActorParticleDensity': '0.000000',
+            'PostEffects': '0',
+            'EnvironmentParticleDensity': '0.000000',
+            'ShowGrass': '0',
+            'TerrainTextureQuality': '0'
+        })
+        ini['Options'].update({
+            'ClipPlane': '0',
+            'Sky': '0',
+            'ActorClipPlane': '0',
+            'FogScale': '0.100000',
+            'ShadowClipPlane': '0',
+            'LoD': '0'
+        })
     return ini
 
 
