@@ -1,17 +1,14 @@
-import os
-
 from character import CHARACTER_LACUS, CHARACTER_GOBBIN, CHARACTER_JELESPIA, CHARACTER_HEEYO, CHARACTER_ZAVVO, \
     CHARACTER_KIKA, CHARACTER_QUIA, CHARACTER_XELMAR, CHARACTER_CONTOR, CHARACTER_FADRO, CHARACTER_TOMMAR, \
     CHARACTER_STABBA, CHARACTER_WAMMA, CHARACTER_KORLOV, CHARACTER_UTLIAH, CHARACTER_POXXIN, CHARACTER_BELOMB, \
     CHARACTER_DIDYA, CHARACTER_AGRAUL, CHARACTER_MAMBO, CHARACTER_ETTIA, CHARACTER_YAMMER, CHARACTER_NOKO, \
     CHARACTER_VELLOCK, CHARACTER_CHAILA, CHARACTER_OMBRO, CHARACTER_KRYSO, CHARACTER_TIRIA, CHARACTER_PORRIT, \
     CHARACTER_RASTLE
-from ini import generate_configs_for_all_characters, SERVERS, REMOTE_EQBC, diff_inis, load_ini, LOCAL, AWS1
+from ini import generate_configs_for_all_characters, REMOTE_EQBC
 from roles.eq_class import ClericClass, WarriorClass
 from roles.models.buff_config import BuffConfig
 from roles.models.party_config import PartyConfiguration, Group
 from roles.models.target import ExplicitTarget, MeleeTarget, ClassTarget, PetTarget, CasterTarget
-from sync_macros import sync_macros
 
 buff_config = frozenset([
     ('HpAc', BuffConfig(caster=CHARACTER_HEEYO, targets=frozenset([ClassTarget(WarriorClass), ExplicitTarget(CHARACTER_JELESPIA), ClassTarget(ClericClass)]))),
@@ -122,5 +119,3 @@ if __name__ == '__main__':
         party_config,
         eqbc_server=REMOTE_EQBC,
         local_only=False)
-
-    sync_macros(SERVERS[1:])

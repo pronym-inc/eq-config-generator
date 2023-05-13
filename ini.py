@@ -30,6 +30,10 @@ class Server:
     def macro_path(self) -> str:
         return os.path.join(self.mq_path, "Macros")
 
+    @property
+    def mq_config_path(self) -> str:
+        return os.path.join(self.mq_path, "config")
+
 
 @dataclass(frozen=True)
 class EqbcServer:
@@ -38,13 +42,13 @@ class EqbcServer:
 
 
 LOCAL_EQBC = EqbcServer("127.0.0.1")
-REMOTE_EQBC = EqbcServer("10.0.14.190")
+REMOTE_EQBC = EqbcServer("127.0.0.1")
 
 
 LOCAL = Server(
     "Local",
-    eq_path="C:\\Users\\Gregg\\Downloads\\everquest_rof2\\everquest_rof2",
-    mq_path="C:\\Users\\Gregg\\AppData\\Local\\VeryVanilla\\Emu\\Release",
+    eq_path="C:\\everquest_rof2",
+    mq_path="C:\\Users\\Gregg Keithley\\AppData\\Local\\VeryVanilla\\Emu\\Release",
     video_modes=VideoModes(
         width=1820,
         height=1440,
@@ -82,7 +86,7 @@ AWS2 = Server(
 )
 
 
-SERVERS = [LOCAL, AWS1, AWS2]
+SERVERS = [LOCAL]
 
 
 def compare_dicts(dict1: Dict[str, Dict[str, str]], dict2: Dict[str, Dict[str, str]]) -> bool:
@@ -147,7 +151,7 @@ def render_file_to_mq2(
     servers: List[Server]
 ) -> None:
     paths_to_use = [
-        server.mq_path
+        server.mq_config_path
         for server
         in servers
     ]
@@ -636,4 +640,4 @@ def generate_configs_for_all_characters(
     generate_eqhost(servers)
 
 
-__all__ = ['generate_configs_for_all_characters', 'Server', 'SERVERS']
+__all__ = ['generate_configs_for_all_characters', 'Server', 'SERVERS', 'REMOTE_EQBC']
