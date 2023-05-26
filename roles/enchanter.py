@@ -28,5 +28,5 @@ class EnchanterRole(Role):
             DoBuffCycleHotButton(4, 1, SpellAlias("Clarity")),
             DoBuffCycleHotButton(4, 2, SpellAlias("Haste")),
             AssistAndCastHotButton(5, 3, SpellAlias("ManaDrain")),
-            DoBuffCycleHotButton(5, 4, SpellAlias("IntWisBuff"))
+            DoBuffCycleHotButton(5, 4, SpellAlias("IntWis"))
         ]

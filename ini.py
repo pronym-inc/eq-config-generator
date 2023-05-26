@@ -1,6 +1,7 @@
 import os
 import shutil
 from dataclasses import dataclass
+from random import choice
 from typing import Dict, List, Optional
 
 from character import Character, CHARACTERS, BardConfig
@@ -345,19 +346,19 @@ def create_bureauconfig_for_character(
         character: Character,
         party_config: PartyConfiguration
 ) -> Dict[str, Dict[str, str]]:
-    output: Dict[str, str] = {
-        'IsMelee': "1" if character.class_.is_melee() else "0",
+    output = character.get_bureau_config()
+
+    output.update({
         'Healer': ",".join(map(
             lambda x: x.name,
             party_config.get_healers_by_character().get(character, [])
         )),
-        'HealThreshold': str(65 if character.class_.is_warrior() else 90)
-    }
-
-    for spell_alias in character.get_spell_aliases():
-        maybe_spell = spell_alias.get_from_spellbook(character.spellbook)
-        if maybe_spell:
-            output[f"{spell_alias.alias}Spell"] = maybe_spell.name
+        'HealingStrategy': "normal",
+        'MainTankHealers': ",".join(list(map(lambda x: x.name, party_config.healing_config.main_tank_healers))),
+        'OfftankHealers': ",".join(list(map(lambda x: x.name, party_config.healing_config.offtank_healers))),
+        'TopUpHealer': choice(list(party_config.healing_config.topup_healers)).name,
+        'BureauEquipProfile': 'Default'
+    })
 
     return {"Default": output}
 
@@ -542,16 +543,24 @@ def generate_buff_config(
 ) -> None:
     contents: Dict[str, Dict[str, str]] = {}
 
+    def flatten(x: list[list]) -> list:
+        output = []
+        for item in x:
+            output.extend(item)
+        return output
+
     for spell_alias, buff_config in party_config.buff_config:
         targets: List[str] = []
         for target in buff_config.targets:
             targets.extend(list(target.get_targets()))
 
+        casters = flatten([list(target.get_targets()) for target in buff_config.casters])
+
         entry = {
             'SpellAlias': f'{spell_alias}Spell',
             'Targets': ",".join(sorted(targets)),
             'IsGroupSpell': '1' if buff_config.is_group_spell else '0',
-            'Casters': buff_config.caster.name,
+            'Casters': ",".join(frozenset(casters)),
             'Enabled': '1'
         }
         contents[spell_alias] = entry
@@ -574,14 +583,14 @@ def generate_autologin_config(
             'NotifyOnServerUP': '0'
         },
         'Servers': {
-            'gregg': 'Gregg'
+            'GreggServer': 'Gregg'
         }
     }
 
     for character in CHARACTERS:
         contents[character.name.lower()] = {
             'Password': 'darwin',
-            'Server': 'gregg',
+            'Server': 'GreggServer',
             'Character': character.name
         }
 
@@ -628,7 +637,7 @@ def generate_configs_for_all_characters(
 ) -> None:
     servers = [LOCAL] if local_only else SERVERS
 
-    for character in CHARACTERS:
+    for character in party_config.get_final_characters():
         generate_config_for_character(character, party_config, servers)
 
     generate_autologin_config(servers)

@@ -7,7 +7,7 @@ from roles.models.target import Target
 
 @dataclass(frozen=True)
 class BuffConfig:
-    caster: Character
+    casters: FrozenSet[Target]
     targets: FrozenSet[Target]
     is_group_spell: bool = False
     enabled: bool = True

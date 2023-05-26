@@ -13,16 +13,16 @@ class Target(ABC):
 
 class CharacterTarget(Target, ABC):
     def get_targets(self) -> FrozenSet[str]:
-        return frozenset(map(lambda x: x.name, self.get_characters(CHARACTERS)))
+        return frozenset(map(lambda x: x.name, self.get_characters()))
 
     def get_characters(
             self,
-            character_set: FrozenSet[Character]
+            characters: list[Character] = CHARACTERS
     ) -> FrozenSet[Character]:
         return frozenset([
             character
             for character
-            in character_set
+            in characters
             if self.should_match_character(character)
         ])
 
@@ -68,3 +68,12 @@ class PetTarget(Target):
 
     def get_targets(self) -> FrozenSet[str]:
         return frozenset([f"Pet:{self.owner.name}"])
+
+
+@dataclass(frozen=True)
+class ExcludeTarget(CharacterTarget):
+    excluded_characters: FrozenSet[Character]
+
+    def should_match_character(self, character: Character) -> bool:
+        return character not in self.excluded_characters
+

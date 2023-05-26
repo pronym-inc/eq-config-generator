@@ -1,6 +1,7 @@
 from abc import ABC
-from typing import List, FrozenSet
+from typing import List, FrozenSet, Dict
 
+from roles.models.event import Event
 from roles.models.hot_button import HotButton, SpellHotButton, SocialHotButton
 from roles.models.social import Social
 from roles.models.spell_alias import SpellAlias
@@ -28,3 +29,9 @@ class Role(ABC):
 
     def get_extra_spell_aliases(self) -> FrozenSet[SpellAlias]:
         return frozenset([])
+
+    def get_events(self) -> list[Event]:
+        return []
+
+    def get_bureau_config(self) -> Dict[str, str]:
+        return {}

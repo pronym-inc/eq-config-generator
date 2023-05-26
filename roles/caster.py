@@ -8,3 +8,6 @@ from roles.models.social import Social
 class CasterRole(Role):
     def get_hotbuttons(self) -> List[HotButton]:
         return [ArbitraryHotButton(2, 10, Social("Meditate", "/if (${Me.Standing}) /sit"))]
+
+    def get_eqbc_channels(self) -> list[str]:
+        return ['caster']

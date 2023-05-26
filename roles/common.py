@@ -1,6 +1,7 @@
 from typing import List
 
 from roles.base import Role
+from roles.models.event import Event
 from roles.models.hot_button import HotButton, ArbitraryHotButton
 from roles.models.social import Social
 
@@ -29,4 +30,10 @@ class CommonRole(Role):
             ArbitraryHotButton(4, 10, self.STATUS_CHECK_SOCIAL),
             ArbitraryHotButton(4, 8, self.ENABLE_AUTOHEAL),
             ArbitraryHotButton(4, 9, self.DISABLE_AUTOHEAL)
+        ]
+
+    def get_events(self) -> list[Event]:
+        return [
+            Event("StartBattle", "#*#The Bureau Battle has started#*", "/varset BattleStarted TRUE"),
+            Event("EndBattle", "#*#The Bureau Battle has ended#*#", "/varset BattleStarted FALSE")
         ]

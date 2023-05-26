@@ -23,5 +23,9 @@ class ClericRole(Role):
     def get_extra_spell_aliases(self) -> FrozenSet[SpellAlias]:
         return frozenset([
             SpellAlias("Rez"),
-            SpellAlias("BigHeal")
+            SpellAlias("BigHeal"),
+            SpellAlias("ResistDisease")
         ])
+
+    def get_eqbc_channels(self) -> list[str]:
+        return ['cleric']

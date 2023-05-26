@@ -1,20 +1,16 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, FrozenSet, Dict
 
+from misc import flatten
+from roles import Role
 from roles.eq_class import DruidClass, RogueClass, WarriorClass, PaladinClass, ClericClass, EnchanterClass, BardClass, \
     MagicianClass, MonkClass, ShamanClass, ShadowknightClass, NecromancerClass, RangerClass, WizardClass, EqClass
+from roles.models.event import Event
 from roles.models.spell import Spell
 from roles.models.spell_alias import SpellAlias
 from roles.models.spellbook import Spellbook, DruidSpellbook, NullSpellbook, ClericSpellbook, EnchanterSpellbook, \
     BardSpellbook, MagicianSpellbook, ShamanSpellbook, ShadowknightSpellbook, NecromancerSpellbook, RangerSpellbook, \
     WizardSpellbook
-
-
-@dataclass(frozen=True)
-class Event:
-    name: str
-    trigger: str
-    command: str
 
 
 @dataclass(frozen=True)
@@ -32,6 +28,32 @@ class Character:
     class_: EqClass
     spellbook: Spellbook = NullSpellbook()
     bard_config: Optional[BardConfig] = None
+    extra_roles: FrozenSet[Role] = frozenset([])
+
+    def get_bureau_config(self) -> Dict[str, str]:
+        output: Dict[str, str] = {
+            'IsMelee': "1" if self.class_.is_melee() else "0",
+            'Leader': 'Wamma',
+            'CCAssist': 'Jelespia',
+            'HealThreshold': str(self.get_heal_threshold()),
+            'BattleStarted': "FALSE"
+        }
+
+        for spell_alias in self.get_spell_aliases():
+            maybe_spell = spell_alias.get_from_spellbook(self.spellbook)
+            if maybe_spell:
+                output[f"{spell_alias.alias}Spell"] = maybe_spell.name
+
+        for role in self.extra_roles:
+            output.update(role.get_bureau_config())
+
+        return output
+
+    def get_heal_threshold(self) -> int:
+        if self.class_.is_warrior():
+            return 65
+        else:
+            return 90
 
     def get_events(self) -> List[Event]:
         return [
@@ -40,10 +62,28 @@ class Character:
                 "#*#YOU for #*# damage#*#",
                 "/if (!${Bool[${JustCheckedHeal}]} && ${Me.PctHPs}<${Ini[BureauConfig_${Me.Name}.ini,Default,HealThreshold]}) /mac checkheal"
             )
-        ]
+        ] + self.class_.get_events() + flatten(list(map(lambda x: x.get_events(), self.extra_roles)))
 
     def get_spell_aliases(self) -> List[SpellAlias]:
         return self.class_.get_spell_aliases()
+
+    def with_extra_role(self, role: Role) -> 'Character':
+        return Character(
+            self.name,
+            self.class_,
+            self.spellbook,
+            self.bard_config,
+            frozenset(list(self.extra_roles) + [role])
+        )
+
+    def get_eqbc_channels(self) -> list[str]:
+        output: list[str] = self.class_.get_eqbc_channels()
+
+        for role in self.extra_roles:
+            output.extend(role.get_eqbc_channels())
+
+        return output
+
 
 
 druid_spellbook = DruidSpellbook(
@@ -53,7 +93,8 @@ druid_spellbook = DruidSpellbook(
     heal=Spell("Greater Healing"),
     sow=Spell("Pack Spirit"),
     dispel=Spell("Nullify Magic"),
-    regen=Spell("Pack Chloroplast")
+    regen=Spell("Pack Chloroplast"),
+    junk=Spell("Endure Cold")
 )
 
 cleric_spellbook = ClericSpellbook(
@@ -63,11 +104,12 @@ cleric_spellbook = ClericSpellbook(
     small_heal=Spell("Greater Healing"),
     big_heal=Spell("Superior Healing"),
     complete_heal=Spell("Complete Heal"),
-    rez=Spell("Resurrection")
+    rez=Spell("Resurrection"),
+    resist_disease=Spell("Resist Disease")
 )
 
 enchanter_spellbook = EnchanterSpellbook(
-    memory_blur=Spell("Reoccurring Amenesia"),
+    int_wis=Spell("Brilliance"),
     mesmerize=Spell("Dazzle"),
     tash=Spell("Tashania"),
     clarity=Spell("Clarity"),
@@ -101,10 +143,10 @@ shaman_spellbook = ShamanSpellbook(
     talisman=Spell("Talisman of Altuna"),
     sta_buff=Spell("Stamina"),
     str_buff=Spell("Strength"),
-    dex_buff=Spell("Dexterity"),
     slow=Spell("Togor's Insects"),
     heal=Spell("Greater Healing"),
-    dot=Spell("Envenomed Bolt")
+    dot=Spell("Envenomed Bolt"),
+    junk=Spell("Dexterous Aura")
 )
 
 shadowknight_spellbook = ShadowknightSpellbook(
@@ -131,7 +173,11 @@ CHARACTER_GOBBIN = Character("Gobbin", DruidClass, druid_spellbook)
 CHARACTER_ZAVVO = Character("Zavvo", RogueClass)
 CHARACTER_LACUS = Character("Lacus", WarriorClass)
 CHARACTER_FADRO = Character("Fadro", PaladinClass)
-CHARACTER_HEEYO = Character("Heeyo", ClericClass, cleric_spellbook)
+CHARACTER_HEEYO = Character(
+    "Heeyo",
+    ClericClass,
+    cleric_spellbook
+)
 CHARACTER_STABBA = Character("Stabba", RogueClass)
 CHARACTER_JELESPIA = Character("Jelespia", EnchanterClass, enchanter_spellbook)
 CHARACTER_TOMMAR = Character("Tommar", WarriorClass)
@@ -178,7 +224,7 @@ CHARACTER_ETTIA = Character(
         lute_name="Mandolin",
         horn_name="Horn",
         wind_name="Wooden Flute",
-        drum_name="Hand Drum"
+        drum_name="Selo`s Drums of the March"
     )
 )
 CHARACTER_NOKO = Character("Noko", WizardClass, wizard_spellbook)

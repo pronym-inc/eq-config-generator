@@ -22,7 +22,7 @@ class BardRole(Role):
                 2,
                 Social(
                     "Resist Twist",
-                    "/twist ${Me.Gem[${Resist1Spell}]} ${Me.Gem[${Resist2Spell}]} ${Me.Gem[${Resist3Spell}]}"
+                    "/twist ${Me.Gem[${Resist3Spell}]}"
                 )
             ),
             ArbitraryHotButton(
@@ -47,3 +47,5 @@ class BardRole(Role):
             SpellAlias("IntWis")
         ])
 
+    def get_eqbc_channels(self) -> list[str]:
+        return ["bard"]

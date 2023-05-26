@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import reduce
 from typing import FrozenSet, List, Tuple, Dict
 
 from roles import MeleeRole, BardRole, SnarerRole, HealerRole, PetOwnerRole, MagicianRole, DoterRole, \
@@ -6,6 +7,7 @@ from roles import MeleeRole, BardRole, SnarerRole, HealerRole, PetOwnerRole, Mag
     DruidRole, MonkRole, RogueRole, PaladinRole, RangerRole, ShadowknightRole, WizardRole, \
     NecromancerRole, WarriorRole, DamageShielderRole, BufferRole
 from roles.models import HotButton, Social
+from roles.models.event import Event
 from roles.models.spell_alias import SpellAlias
 
 
@@ -15,18 +17,21 @@ class EqClass:
     roles: FrozenSet[Role]
     required_spells: FrozenSet[str] = frozenset([])
 
-    def get_hot_buttons(self) -> List[HotButton]:
-        output: List[HotButton] = CommonRole().get_hotbuttons()
+    def _get_all_roles(self) -> FrozenSet[Role]:
+        return self.roles.union(frozenset([CommonRole()]))
 
-        for role in self.roles:
+    def get_hot_buttons(self) -> List[HotButton]:
+        output: List[HotButton] = []
+
+        for role in self._get_all_roles():
             output.extend(role.get_hotbuttons())
 
         return output
 
     def get_socials(self) -> List[Social]:
-        output: List[Social] = CommonRole().get_socials()
+        output: List[Social] = []
 
-        for role in self.roles:
+        for role in self._get_all_roles():
             output.extend(role.get_socials())
 
         return output
@@ -34,7 +39,7 @@ class EqClass:
     def get_spell_aliases(self) -> List[SpellAlias]:
         output: List[SpellAlias] = []
 
-        for role in self.roles:
+        for role in self._get_all_roles():
             output.extend(role.get_spell_aliases())
 
         return list(set(output))
@@ -59,6 +64,19 @@ class EqClass:
                 )
             else:
                 found_hotbutton_config[(hotbutton.bank_index, hotbutton.button_index)] = hotbutton
+
+    def get_events(self) -> list[Event]:
+        def combine_lists(x: list, y: list) -> list:
+            output = []
+            output.extend(x)
+            output.extend(y)
+            return output
+
+        return reduce(
+            combine_lists,
+            [role.get_events() for role in self._get_all_roles()],
+            []
+        )
 
 
 WarriorClass = EqClass(

@@ -51,6 +51,7 @@ class ClericSpellbook(Spellbook):
     big_heal: Spell
     complete_heal: Spell
     rez: Spell
+    resist_disease: Spell
 
 
 @dataclass(frozen=True)
@@ -62,11 +63,12 @@ class DruidSpellbook(Spellbook):
     sow: Spell
     dispel: Spell
     regen: Spell
+    junk: Spell
 
 
 @dataclass(frozen=True)
 class EnchanterSpellbook(Spellbook):
-    memory_blur: Spell
+    int_wis: Spell
     mesmerize: Spell
     tash: Spell
     clarity: Spell
@@ -113,10 +115,10 @@ class ShamanSpellbook(Spellbook):
     talisman: Spell
     sta_buff: Spell
     str_buff: Spell
-    dex_buff: Spell
     slow: Spell
     heal: Spell
     dot: Spell
+    junk: Spell
 
 
 @dataclass(frozen=True)
